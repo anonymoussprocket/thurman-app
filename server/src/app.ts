@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import { config } from "./config";
 import http from "http";
 import expressWinston from "express-winston";
-import winston from "winston";
+import { logger } from "./config/logger";
 import authRouter from "./routes/auth"; 
 import userRouter from "./routes/user";
 import loanPoolsRouter from "./routes/loanPools";
@@ -18,22 +18,17 @@ const { port, apiPrefix } = config;
 const app: Express = express();
 const server = http.createServer(app);
 
-// Winston logger configuration
+// Winston logger configuration with file rotation
 const loggerOptions: expressWinston.LoggerOptions = {
-    transports: [
-        new winston.transports.Console()
-    ],
-    format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.json(),
-        winston.format.timestamp(),
-        winston.format.prettyPrint()
-    ),
+    winstonInstance: logger,
     meta: true,
-    msg: "HTTP {{req.method}} {{req.url}}",
+    msg: "HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms",
     expressFormat: true,
-    colorize: true,
-    ignoreRoute: function (req, res) { return false; }
+    colorize: false, // File logs should not have color codes
+    ignoreRoute: function (req, res) { 
+        // Ignore health check routes to reduce log noise
+        return req.url === '/health' || req.url === '/ping';
+    }
 };
 
 // ===== MIDDLEWARE ORDER =====
@@ -65,7 +60,10 @@ app.use(notFound);
 app.use(errorHandler);
 
 server.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    logger.info(`Server running on port ${port}`);
+    logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`Log files are stored in: ${process.cwd()}/logs`);
+    logger.info(`Log level set to: ${logger.level} ${process.env.LOG_LEVEL ? '(explicit)' : '(auto)'}`);
 });
 
 export default app;
