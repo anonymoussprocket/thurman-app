@@ -1,5 +1,5 @@
-import { Wallet, BlockchainAccess } from "@prisma/client";
-import db from "../../utils/prismaClient";
+import { Wallet, BlockchainAccess } from '@prisma/client';
+import db from '../../utils/prismaClient';
 
 type CreateWalletParams = {
     id?: string;
@@ -9,17 +9,9 @@ type CreateWalletParams = {
     name?: string;
     userId?: number;
     blockchains: { chainId: string; name: string }[];
-}
+};
 
-export async function createWallet({
-    id,
-    address,
-    custodyType,
-    accountType,
-    name,
-    userId,
-    blockchains
-}: CreateWalletParams): Promise<Wallet | null> {
+export async function createWallet({ id, address, custodyType, accountType, name, userId, blockchains }: CreateWalletParams): Promise<Wallet | null> {
     try {
         const wallet = await db.wallet.create({
             data: {

@@ -1,6 +1,6 @@
-import circleContractClient from "../utils/circleContractClient";
-import { formatUSDCAmount } from "./utils";
-import { v4 as uuidv4 } from "uuid";
+import circleContractClient from '../utils/circleContractClient';
+import { formatUSDCAmount } from './utils';
+import { v4 as uuidv4 } from 'uuid';
 
 // ============================================================================
 // TYPESCRIPT INTERFACES
@@ -48,9 +48,9 @@ export interface EventMonitor {
 // ============================================================================
 
 export const THURMAN_EVENTS = {
-    DEPOSIT_REQUEST: "DepositRequest(uint256,address,uint256)",
-    DEPOSIT_FULFILLED: "DepositFulfilled(uint256,address,uint256)",
-    DEPOSIT: "Deposit(address,address,uint256,uint256)"
+    DEPOSIT_REQUEST: 'DepositRequest(uint256,address,uint256)',
+    DEPOSIT_FULFILLED: 'DepositFulfilled(uint256,address,uint256)',
+    DEPOSIT: 'Deposit(address,address,uint256,uint256)'
 };
 
 // ============================================================================
@@ -65,26 +65,25 @@ export const importThurmanContract = async (): Promise<{ success: boolean; contr
     try {
         const poolManagerAddress = process.env.POOL_MANAGER_ADDRESS;
         if (!poolManagerAddress) {
-            throw new Error("Pool manager address not configured");
+            throw new Error('Pool manager address not configured');
         }
 
         console.log(`🔄 Importing Thurman PoolManager contract: ${poolManagerAddress}`);
 
         // Note: Contract import functionality may not be available in current SDK
         // This is a placeholder for when the API becomes available
-        console.log("⚠️  Contract import not available in current SDK version");
-        console.log("ℹ️  Please import contract manually via Circle Console");
-        
+        console.log('⚠️  Contract import not available in current SDK version');
+        console.log('ℹ️  Please import contract manually via Circle Console');
+
         return {
             success: true,
-            contractId: "manual-import-required"
+            contractId: 'manual-import-required'
         };
-
     } catch (error: any) {
-        console.error("❌ Contract import failed:", error);
+        console.error('❌ Contract import failed:', error);
         return {
             success: false,
-            error: error.message || "Failed to import contract"
+            error: error.message || 'Failed to import contract'
         };
     }
 };
@@ -95,30 +94,26 @@ export const importThurmanContract = async (): Promise<{ success: boolean; contr
  * @param eventSignature - Event signature to monitor
  * @returns Monitor creation result
  */
-export const createEventMonitor = async (
-    contractAddress: string,
-    eventSignature: string
-): Promise<{ success: boolean; monitorId?: string; error?: string }> => {
+export const createEventMonitor = async (contractAddress: string, eventSignature: string): Promise<{ success: boolean; monitorId?: string; error?: string }> => {
     try {
         console.log(`🔄 Creating event monitor for: ${eventSignature}`);
 
         // Note: Event monitor creation may not be available in current SDK
         // This is a placeholder for when the API becomes available
-        console.log("⚠️  Event monitor creation not available in current SDK version");
-        console.log("ℹ️  Please create monitors manually via Circle Console");
+        console.log('⚠️  Event monitor creation not available in current SDK version');
+        console.log('ℹ️  Please create monitors manually via Circle Console');
         console.log(`  Contract: ${contractAddress}`);
         console.log(`  Event: ${eventSignature}`);
-        
+
         return {
             success: true,
-            monitorId: "manual-creation-required"
+            monitorId: 'manual-creation-required'
         };
-
     } catch (error: any) {
         console.error(`❌ Event monitor creation failed for ${eventSignature}:`, error);
         return {
             success: false,
-            error: error.message || "Failed to create event monitor"
+            error: error.message || 'Failed to create event monitor'
         };
     }
 };
@@ -134,7 +129,7 @@ export const initializeEventMonitors = async (): Promise<{
     error?: string;
 }> => {
     try {
-        console.log("🔄 Initializing Circle Event Monitors for Thurman Protocol");
+        console.log('🔄 Initializing Circle Event Monitors for Thurman Protocol');
 
         // Step 1: Import contract
         const contractResult = await importThurmanContract();
@@ -143,19 +138,15 @@ export const initializeEventMonitors = async (): Promise<{
         }
 
         const contractId = contractResult.contractId;
-        console.log("ℹ️  Using manual contract import process");
+        console.log('ℹ️  Using manual contract import process');
 
         // Step 2: Create event monitors
         const monitors: { [key: string]: string } = {};
-        const eventSignatures = [
-            THURMAN_EVENTS.DEPOSIT_REQUEST,
-            THURMAN_EVENTS.DEPOSIT_FULFILLED,
-            THURMAN_EVENTS.DEPOSIT
-        ];
+        const eventSignatures = [THURMAN_EVENTS.DEPOSIT_REQUEST, THURMAN_EVENTS.DEPOSIT_FULFILLED, THURMAN_EVENTS.DEPOSIT];
 
         const poolManagerAddress = process.env.POOL_MANAGER_ADDRESS;
         if (!poolManagerAddress) {
-            throw new Error("Pool manager address not configured");
+            throw new Error('Pool manager address not configured');
         }
 
         for (const eventSignature of eventSignatures) {
@@ -167,24 +158,23 @@ export const initializeEventMonitors = async (): Promise<{
             }
         }
 
-        console.log("✅ Event monitors initialization completed (manual setup required)");
-        console.log("📋 Manual Setup Instructions:");
-        console.log("1. Go to Circle Console > Contracts");
-        console.log("2. Import contract:", poolManagerAddress);
-        console.log("3. Create event monitors for each event signature");
-        console.log("4. Configure webhook URL for notifications");
-        
+        console.log('✅ Event monitors initialization completed (manual setup required)');
+        console.log('📋 Manual Setup Instructions:');
+        console.log('1. Go to Circle Console > Contracts');
+        console.log('2. Import contract:', poolManagerAddress);
+        console.log('3. Create event monitors for each event signature');
+        console.log('4. Configure webhook URL for notifications');
+
         return {
             success: true,
             contractId,
             monitors
         };
-
     } catch (error: any) {
-        console.error("❌ Event monitors initialization failed:", error);
+        console.error('❌ Event monitors initialization failed:', error);
         return {
             success: false,
-            error: error.message || "Failed to initialize event monitors"
+            error: error.message || 'Failed to initialize event monitors'
         };
     }
 };
@@ -200,27 +190,19 @@ export const initializeEventMonitors = async (): Promise<{
  */
 export const getDepositHistory = async (query: EventQuery = {}): Promise<DepositEvent[]> => {
     try {
-        const {
-            userAddress,
-            poolId,
-            limit = 100,
-            fromBlock,
-            toBlock,
-            eventType
-        } = query;
+        const { userAddress, poolId, limit = 100, fromBlock, toBlock, eventType } = query;
 
         console.log(`🔄 Querying deposit history:`, { userAddress, poolId, limit, eventType });
 
         // Note: Event history querying may not be available in current SDK
         // This is a placeholder for when the API becomes available
-        console.log("⚠️  Event history querying not available in current SDK version");
-        console.log("ℹ️  Please use Circle Console or REST API for event history");
-        
+        console.log('⚠️  Event history querying not available in current SDK version');
+        console.log('ℹ️  Please use Circle Console or REST API for event history');
+
         // Return empty array for now
         return [];
-
     } catch (error: any) {
-        console.error("❌ Failed to query deposit history:", error);
+        console.error('❌ Failed to query deposit history:', error);
         throw new Error(`Failed to query deposit history: ${error.message}`);
     }
 };
@@ -259,12 +241,11 @@ export const parseEventToDepositEvent = async (event: any): Promise<DepositEvent
             amount: parsedData.amount,
             amountWei: parsedData.amountWei,
             timestamp: event.firstConfirmDate ? new Date(event.firstConfirmDate).getTime() : Date.now(),
-            logIndex: parseInt(event.logIndex || "0"),
+            logIndex: parseInt(event.logIndex || '0'),
             contractAddress: event.contractAddress || event.notification?.contractAddress
         };
-
     } catch (error: any) {
-        console.error("Failed to parse event:", error);
+        console.error('Failed to parse event:', error);
         throw new Error(`Event parsing failed: ${error.message}`);
     }
 };
@@ -279,9 +260,9 @@ export const parseDepositRequestEvent = (event: any): ParsedEventData => {
         // Event signature: "DepositRequest(uint256,address,uint256)"
         // Topics: [0] = event signature, [1] = poolId, [2] = userAddress, [3] = amount
         const topics = event.topics || event.notification?.topics || [];
-        
+
         if (topics.length < 4) {
-            throw new Error("Invalid DepositRequest event: insufficient topics");
+            throw new Error('Invalid DepositRequest event: insufficient topics');
         }
 
         const poolId = parseInt(topics[1], 16);
@@ -296,7 +277,6 @@ export const parseDepositRequestEvent = (event: any): ParsedEventData => {
             amountWei,
             eventType: 'DepositRequest'
         };
-
     } catch (error: any) {
         throw new Error(`DepositRequest parsing failed: ${error.message}`);
     }
@@ -312,9 +292,9 @@ export const parseDepositFulfilledEvent = (event: any): ParsedEventData => {
         // Event signature: "DepositFulfilled(uint256,address,uint256)"
         // Topics: [0] = event signature, [1] = poolId, [2] = userAddress, [3] = amount
         const topics = event.topics || event.notification?.topics || [];
-        
+
         if (topics.length < 4) {
-            throw new Error("Invalid DepositFulfilled event: insufficient topics");
+            throw new Error('Invalid DepositFulfilled event: insufficient topics');
         }
 
         const poolId = parseInt(topics[1], 16);
@@ -329,7 +309,6 @@ export const parseDepositFulfilledEvent = (event: any): ParsedEventData => {
             amountWei,
             eventType: 'DepositFulfilled'
         };
-
     } catch (error: any) {
         throw new Error(`DepositFulfilled parsing failed: ${error.message}`);
     }
@@ -347,18 +326,18 @@ export const parseDepositClaimedEvent = (event: any): ParsedEventData => {
         // Data: [0] = amount, [1] = shares
         const topics = event.topics || event.notification?.topics || [];
         const data = event.data || event.notification?.data || [];
-        
+
         if (topics.length < 3 || data.length < 2) {
-            throw new Error("Invalid Deposit event: insufficient topics/data");
+            throw new Error('Invalid Deposit event: insufficient topics/data');
         }
 
         const userAddress = `0x${topics[1].slice(26)}`; // Remove padding
         const poolAddress = `0x${topics[2].slice(26)}`; // Remove padding
-        
+
         // For Deposit events, we need to extract poolId from poolAddress or use a mapping
         // For now, we'll use 0 as placeholder - this should be enhanced with actual pool mapping
         const poolId = 0; // TODO: Implement pool address to ID mapping
-        
+
         const amountWei = data[0];
         const amount = formatUSDCAmount(amountWei);
 
@@ -369,7 +348,6 @@ export const parseDepositClaimedEvent = (event: any): ParsedEventData => {
             amountWei,
             eventType: 'Deposit'
         };
-
     } catch (error: any) {
         throw new Error(`Deposit parsing failed: ${error.message}`);
     }
@@ -396,20 +374,19 @@ export const formatEventAmounts = (amountWei: string): string => {
 export const validateWebhookEvent = (event: any): { valid: boolean; error?: string } => {
     try {
         if (!event || !event.notification?.eventName) {
-            return { valid: false, error: "Missing event signature" };
+            return { valid: false, error: 'Missing event signature' };
         }
 
         const validSignatures = Object.values(THURMAN_EVENTS);
         if (!validSignatures.includes(event.notification.eventName)) {
-            return { valid: false, error: "Invalid event signature" };
+            return { valid: false, error: 'Invalid event signature' };
         }
 
         if (!event.notification.txHash) {
-            return { valid: false, error: "Missing transaction hash" };
+            return { valid: false, error: 'Missing transaction hash' };
         }
 
         return { valid: true };
-
     } catch (error: any) {
         return { valid: false, error: `Validation failed: ${error.message}` };
     }
@@ -422,10 +399,7 @@ export const validateWebhookEvent = (event: any): { valid: boolean; error?: stri
  * @returns Whether event is duplicate
  */
 export const isDuplicateEvent = (event: DepositEvent, existingEvents: DepositEvent[]): boolean => {
-    return existingEvents.some(existing => 
-        existing.transactionHash === event.transactionHash && 
-        existing.logIndex === event.logIndex
-    );
+    return existingEvents.some(existing => existing.transactionHash === event.transactionHash && existing.logIndex === event.logIndex);
 };
 
 /**
@@ -436,12 +410,11 @@ export const getActiveMonitors = async (): Promise<EventMonitor[]> => {
     try {
         // Note: This method may not exist in the current SDK version
         // For now, return empty array - this can be enhanced when the API is available
-        console.log("⚠️  getActiveMonitors: Method not available in current SDK version");
-        console.log("ℹ️  Please check monitors via Circle Console");
+        console.log('⚠️  getActiveMonitors: Method not available in current SDK version');
+        console.log('ℹ️  Please check monitors via Circle Console');
         return [];
-
     } catch (error: any) {
-        console.error("Failed to get active monitors:", error);
+        console.error('Failed to get active monitors:', error);
         return [];
     }
-}; 
+};

@@ -10,12 +10,12 @@ interface MetricCardProps {
 export function MetricCard({ label, value, loading }: MetricCardProps) {
   return (
     <Paper sx={styles.metrics.card}>
-      <Typography variant="h6" sx={styles.metrics.label}>
+      <Typography variant='h6' sx={styles.metrics.label}>
         {label}
       </Typography>
-      <Typography variant="h4" sx={styles.metrics.value}>
-        {loading ? "..." : value}
+      <Typography variant='h4' sx={styles.metrics.value}>
+        {loading ? '...' : value}
       </Typography>
     </Paper>
   );
-} 
+}

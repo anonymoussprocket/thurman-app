@@ -1,12 +1,7 @@
-import { v4 as uuidv4 } from "uuid";
-import { parseUnits } from "ethers";
-import { 
-    executeContractTransaction, 
-    THURMAN_ABI, 
-    TransactionRequest, 
-    TransactionResponse 
-} from "./transactionService";
-import db from "../utils/prismaClient";
+import { v4 as uuidv4 } from 'uuid';
+import { parseUnits } from 'ethers';
+import { executeContractTransaction, THURMAN_ABI, TransactionRequest, TransactionResponse } from './transactionService';
+import db from '../utils/prismaClient';
 
 // ============================================================================
 // POOL MANAGEMENT TYPES
@@ -29,25 +24,25 @@ type DeployPoolParams = {
     vaultAddress: string;
     originatorRegistryAddress: string;
     poolManagerAddress: string;
-}
+};
 
 type DeployPoolAndLoansResult = {
     success: boolean;
     transactionId?: string;
     error?: string;
-}
+};
 
 type ConfigurePoolResult = {
     success: boolean;
     transactionId?: string;
     error?: string;
-}
+};
 
 type DeployLoansResult = {
     success: boolean;
     transactionId?: string;
     error?: string;
-}
+};
 
 type LoanParameter = {
     borrower: string;
@@ -56,17 +51,13 @@ type LoanParameter = {
     principal: string;
     termMonths: number;
     interestRate: string;
-}
+};
 
 // ============================================================================
 // POOL PARAMETER FORMATTING
 // ============================================================================
 
-const formatPoolParameters = (params: {
-    vaultAddress: string;
-    originatorRegistryAddress: string;
-    marginFee: number;
-}) => {
+const formatPoolParameters = (params: { vaultAddress: string; originatorRegistryAddress: string; marginFee: number }) => {
     return [
         params.vaultAddress,
         params.originatorRegistryAddress,
@@ -91,22 +82,22 @@ const formatLoanParameters = (loans: LoanData[]): any[] => {
 const parsePoolCreatedEvent = async (txHash: string): Promise<number | null> => {
     try {
         console.log(`Parsing PoolCreated event from transaction: ${txHash}`);
-        
+
         // TODO: IMPLEMENT ACTUAL BLOCKCHAIN EVENT PARSING
         // This is where we would:
         // 1. Use Circle's API to get transaction details
         // 2. Parse the transaction logs for PoolCreated event
         // 3. Extract the actual pool ID from the event data
-        
+
         // For now, we'll use a temporary workaround
         // WARNING: This may not match the actual blockchain pool ID!
-        
+
         // Get the next available pool ID by finding the maximum existing SUCCESSFUL pool ID and adding 1
         // This accounts for non-sequential pool IDs (like 0, 1, 2, 5) and excludes failed pools
         const successfulPools = await db.loanPool.findMany({
             where: {
                 pool_id: { not: null },
-                status: { 
+                status: {
                     in: ['POOL_CREATED', 'POOL_CONFIGURED', 'DEPLOYING_LOANS', 'DEPLOYED'] as any
                 }
             },
@@ -114,17 +105,17 @@ const parsePoolCreatedEvent = async (txHash: string): Promise<number | null> => 
                 pool_id: true
             }
         });
-        
+
         const maxPoolId = successfulPools.length > 0 ? Math.max(...successfulPools.map(p => p.pool_id!)) : -1;
         const nextPoolId = maxPoolId + 1; // Next pool ID after the maximum successful pool
-        
+
         console.log(`⚠️  TEMPORARY: Using sequential pool ID: ${nextPoolId} for transaction: ${txHash}`);
         console.log(`⚠️  WARNING: This may not match the actual blockchain pool ID!`);
         console.log(`⚠️  TODO: Implement proper event parsing to get real blockchain pool ID`);
-        
+
         return nextPoolId;
     } catch (error: any) {
-        console.error("Error parsing PoolCreated event:", error);
+        console.error('Error parsing PoolCreated event:', error);
         return null;
     }
 };
@@ -138,12 +129,7 @@ const parsePoolCreatedEvent = async (txHash: string): Promise<number | null> => 
  * @param params - Pool deployment parameters
  * @returns Deployment result with transaction ID
  */
-export const deployPoolAndLoans = async ({
-    adminWalletId,
-    vaultAddress,
-    originatorRegistryAddress,
-    poolManagerAddress
-}: DeployPoolParams): Promise<DeployPoolAndLoansResult> => {
+export const deployPoolAndLoans = async ({ adminWalletId, vaultAddress, originatorRegistryAddress, poolManagerAddress }: DeployPoolParams): Promise<DeployPoolAndLoansResult> => {
     const idempotencyKey = uuidv4();
 
     try {
@@ -162,19 +148,18 @@ export const deployPoolAndLoans = async ({
             walletId: adminWalletId
         });
 
-        console.log("Pool creation transaction initiated:", contractExecution.transactionId);
+        console.log('Pool creation transaction initiated:', contractExecution.transactionId);
 
         return {
-            success: contractExecution.status === "PENDING",
+            success: contractExecution.status === 'PENDING',
             transactionId: contractExecution.transactionId,
             error: contractExecution.error
         };
-
     } catch (error: any) {
-        console.error("Error deploying pool:", error);
+        console.error('Error deploying pool:', error);
         return {
             success: false,
-            error: error.message || "Failed to deploy pool"
+            error: error.message || 'Failed to deploy pool'
         };
     }
 };
@@ -186,15 +171,7 @@ export const deployPoolAndLoans = async ({
  * @param poolManagerAddress - Pool manager contract address
  * @returns Configuration result with transaction ID
  */
-export const configurePoolSettings = async ({
-    poolId,
-    adminWalletId,
-    poolManagerAddress
-}: {
-    poolId: number;
-    adminWalletId: string;
-    poolManagerAddress: string;
-}): Promise<ConfigurePoolResult> => {
+export const configurePoolSettings = async ({ poolId, adminWalletId, poolManagerAddress }: { poolId: number; adminWalletId: string; poolManagerAddress: string }): Promise<ConfigurePoolResult> => {
     const idempotencyKey = uuidv4();
 
     try {
@@ -208,26 +185,25 @@ export const configurePoolSettings = async ({
                 true, // withdrawalsEnabled
                 true, // borrowingEnabled (required for batchInitLoan)
                 false, // isPaused
-                "0", // maxDepositAmount (0 = no limit)
-                "0", // minDepositAmount (0 = no minimum)
-                "0"  // depositCap (0 = no cap)
+                '0', // maxDepositAmount (0 = no limit)
+                '0', // minDepositAmount (0 = no minimum)
+                '0' // depositCap (0 = no cap)
             ],
             walletId: adminWalletId
         });
 
-        console.log("Pool configuration transaction initiated:", contractExecution.transactionId);
+        console.log('Pool configuration transaction initiated:', contractExecution.transactionId);
 
         return {
-            success: contractExecution.status === "PENDING",
+            success: contractExecution.status === 'PENDING',
             transactionId: contractExecution.transactionId,
             error: contractExecution.error
         };
-
     } catch (error: any) {
-        console.error("Error configuring pool settings:", error);
+        console.error('Error configuring pool settings:', error);
         return {
             success: false,
-            error: error.message || "Failed to configure pool settings"
+            error: error.message || 'Failed to configure pool settings'
         };
     }
 };
@@ -237,19 +213,7 @@ export const configurePoolSettings = async ({
  * @param params - Loan deployment parameters
  * @returns Deployment result with transaction ID
  */
-export const deployLoans = async ({
-    loanData,
-    poolId,
-    adminWalletId,
-    poolManagerAddress,
-    originatorAddress
-}: {
-    loanData: any[];
-    poolId: number;
-    adminWalletId: string;
-    poolManagerAddress: string;
-    originatorAddress: string;
-}): Promise<DeployLoansResult> => {
+export const deployLoans = async ({ loanData, poolId, adminWalletId, poolManagerAddress, originatorAddress }: { loanData: any[]; poolId: number; adminWalletId: string; poolManagerAddress: string; originatorAddress: string }): Promise<DeployLoansResult> => {
     const idempotencyKey = uuidv4();
 
     try {
@@ -264,19 +228,18 @@ export const deployLoans = async ({
             walletId: adminWalletId
         });
 
-        console.log("Loan batch initialization transaction initiated:", contractExecution.transactionId);
+        console.log('Loan batch initialization transaction initiated:', contractExecution.transactionId);
 
         return {
-            success: contractExecution.status === "PENDING",
+            success: contractExecution.status === 'PENDING',
             transactionId: contractExecution.transactionId,
             error: contractExecution.error
         };
-
     } catch (error: any) {
-        console.error("Error deploying loans:", error);
+        console.error('Error deploying loans:', error);
         return {
             success: false,
-            error: error.message || "Failed to deploy loans"
+            error: error.message || 'Failed to deploy loans'
         };
     }
 };
@@ -295,7 +258,7 @@ export const getPoolIdFromTransaction = async (txHash: string): Promise<number |
         // Parse the transaction logs to extract pool ID
         return await parsePoolCreatedEvent(txHash);
     } catch (error: any) {
-        console.error("Error getting pool ID from transaction:", error);
+        console.error('Error getting pool ID from transaction:', error);
         return null;
     }
 };
@@ -318,7 +281,7 @@ export const cleanupFailedPoolIds = async (): Promise<void> => {
 
         if (failedPools.length > 0) {
             console.log(`Found ${failedPools.length} failed pools with pool_id that need cleanup`);
-            
+
             for (const pool of failedPools) {
                 await db.loanPool.update({
                     where: { id: pool.id },
@@ -328,6 +291,6 @@ export const cleanupFailedPoolIds = async (): Promise<void> => {
             }
         }
     } catch (error: any) {
-        console.error("Error cleaning up failed pool IDs:", error);
+        console.error('Error cleaning up failed pool IDs:', error);
     }
-}; 
+};

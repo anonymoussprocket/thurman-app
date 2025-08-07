@@ -1,5 +1,5 @@
-import multer from "multer";
-import { Request } from "express";
+import multer from 'multer';
+import { Request } from 'express';
 
 // File upload configuration
 const storage = multer.memoryStorage();
@@ -8,7 +8,7 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
     // Check file extension
     const allowedExtensions = ['.csv', '.xlsx', '.xls'];
     const fileExtension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
-    
+
     if (allowedExtensions.includes(fileExtension)) {
         cb(null, true);
     } else {
@@ -21,7 +21,7 @@ export const createUploadMiddleware = (fieldName: string = 'file') => {
     return multer({
         storage: storage,
         limits: {
-            fileSize: 10 * 1024 * 1024, // 10MB limit
+            fileSize: 10 * 1024 * 1024 // 10MB limit
         },
         fileFilter: fileFilter
     }).single(fieldName);
@@ -44,4 +44,4 @@ export const extractFormData = (body: any, file: Express.Multer.File | undefined
         interest_rate_range: body.interest_rate_range,
         original_filename: file?.originalname || ''
     };
-}; 
+};

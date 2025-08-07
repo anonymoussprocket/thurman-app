@@ -1,73 +1,73 @@
 // Type definitions for polling hook usage examples
 
 export interface DepositStatus {
-  id: string;
-  poolId: string;
-  userAddress: string;
-  amount: string;
-  status: 'pending' | 'fulfilled' | 'claimed' | 'failed';
-  requestedAt: string;
-  fulfilledAt?: string;
-  claimedAt?: string;
-  transactionHash?: string;
-  shares?: string;
-  errorMessage?: string;
-}
-
-export interface PendingDeposit {
-  id: string;
-  poolId: string;
-  userAddress: string;
-  amount: string;
-  requestedAt: string;
-  userEmail: string;
-  poolName: string;
-}
-
-export interface PoolData {
-  id: string;
-  name: string;
-  description: string;
-  totalAssets: string;
-  totalShares: string;
-  tvl: string;
-  apy: string;
-  status: 'active' | 'paused' | 'closed';
-  createdAt: string;
-  config: {
-    minDeposit: string;
-    maxDeposit: string;
-    lockPeriod: number;
-  };
-}
-
-export interface UserPortfolio {
-  totalDeposits: string;
-  totalShares: string;
-  totalValue: string;
-  activePools: number;
-  deposits: Array<{
-    poolId: string;
-    poolName: string;
-    amount: string;
-    shares: string;
-    value: string;
-    status: DepositStatus['status'];
-  }>;
-}
-
-export interface AdminDashboard {
-  totalPools: number;
-  totalDeposits: string;
-  totalTVL: string;
-  pendingDeposits: number;
-  recentActivity: Array<{
-    type: 'deposit' | 'fulfill' | 'claim';
+    id: string;
     poolId: string;
     userAddress: string;
     amount: string;
-    timestamp: string;
-  }>;
+    status: 'pending' | 'fulfilled' | 'claimed' | 'failed';
+    requestedAt: string;
+    fulfilledAt?: string;
+    claimedAt?: string;
+    transactionHash?: string;
+    shares?: string;
+    errorMessage?: string;
+}
+
+export interface PendingDeposit {
+    id: string;
+    poolId: string;
+    userAddress: string;
+    amount: string;
+    requestedAt: string;
+    userEmail: string;
+    poolName: string;
+}
+
+export interface PoolData {
+    id: string;
+    name: string;
+    description: string;
+    totalAssets: string;
+    totalShares: string;
+    tvl: string;
+    apy: string;
+    status: 'active' | 'paused' | 'closed';
+    createdAt: string;
+    config: {
+        minDeposit: string;
+        maxDeposit: string;
+        lockPeriod: number;
+    };
+}
+
+export interface UserPortfolio {
+    totalDeposits: string;
+    totalShares: string;
+    totalValue: string;
+    activePools: number;
+    deposits: Array<{
+        poolId: string;
+        poolName: string;
+        amount: string;
+        shares: string;
+        value: string;
+        status: DepositStatus['status'];
+    }>;
+}
+
+export interface AdminDashboard {
+    totalPools: number;
+    totalDeposits: string;
+    totalTVL: string;
+    pendingDeposits: number;
+    recentActivity: Array<{
+        type: 'deposit' | 'fulfill' | 'claim';
+        poolId: string;
+        userAddress: string;
+        amount: string;
+        timestamp: string;
+    }>;
 }
 
 // Example usage patterns for the polling hook:
@@ -160,4 +160,4 @@ const { data, refetch } = usePolling<DepositStatus>(
 const handleRefresh = () => {
   refetch();
 };
-*/ 
+*/

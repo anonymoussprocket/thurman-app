@@ -1,7 +1,7 @@
-import express, { Router, Request, Response, NextFunction } from "express";
-import { deployLoans, configurePoolSettings, getPoolIdFromTransaction, cleanupFailedPoolIds } from "../services/circle";
-import { findByTransactionId, updateDeploymentStatus } from "../prisma/models";
-import { logger } from "../config/logger";
+import express, { Router, Request, Response, NextFunction } from 'express';
+import { deployLoans, configurePoolSettings, getPoolIdFromTransaction, cleanupFailedPoolIds } from '../services/circle';
+import { findByTransactionId, updateDeploymentStatus } from '../prisma/models';
+import { logger } from '../config/logger';
 
 const webhooksRouter: Router = express.Router();
 
@@ -31,19 +31,19 @@ const cleanupConnection = (connectionId: string) => {
 };
 
 // GET /api/webhooks/circle - SSE endpoint for real-time updates
-webhooksRouter.get("/circle", (req: Request, res: Response) => {
+webhooksRouter.get('/circle', (req: Request, res: Response) => {
     // Set SSE headers
     res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        Connection: 'keep-alive',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Cache-Control'
     });
 
     // Generate unique connection ID
     const connectionId = `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // Add connection to map
     connectionMap.set(connectionId, res);
     logger.info(`routes/webhooks /circle: established SSE connection ${connectionId}`);
@@ -70,7 +70,7 @@ webhooksRouter.get("/circle", (req: Request, res: Response) => {
     });
 
     // Handle connection error
-    req.on('error', (error) => {
+    req.on('error', error => {
         logger.error(`routes/webhooks /circle: connection error on ${connectionId}: ${error}`);
         clearInterval(heartbeatInterval);
         cleanupConnection(connectionId);
@@ -78,16 +78,16 @@ webhooksRouter.get("/circle", (req: Request, res: Response) => {
 });
 
 // POST /api/webhooks/circle - Enhanced two-phase deployment webhook handler
-webhooksRouter.post("/circle", async (req: Request, res: Response, next: NextFunction) => {
+webhooksRouter.post('/circle', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const notification = req.body;
-        
+
         // Handle Circle test webhooks
         if (notification.notificationType === 'webhooks.test') {
             logger.debug(`routes/webhooks /circle: processing notification ${notification}`);
             return res.status(200).json({
                 success: true,
-                message: "Test webhook received successfully",
+                message: 'Test webhook received successfully',
                 timestamp: notification.timestamp,
                 notificationId: notification.notificationId
             });
@@ -95,11 +95,11 @@ webhooksRouter.post("/circle", async (req: Request, res: Response, next: NextFun
 
         // Handle actual transaction webhooks
         const transactionData = notification.notification;
-        
+
         if (!transactionData || !transactionData.id || !transactionData.state) {
             return res.status(400).json({
                 success: false,
-                error: "Invalid webhook notification - missing transaction data"
+                error: 'Invalid webhook notification - missing transaction data'
             });
         }
 
@@ -111,32 +111,32 @@ webhooksRouter.post("/circle", async (req: Request, res: Response, next: NextFun
 
         if (poolCreationPool && poolCreationPool.pool_creation_tx_id === transactionData.id && transactionData.state === 'CONFIRMED') {
             console.log(`Pool creation confirmed for pool ${poolCreationPool.id}`);
-            
+
             // Parse the actual blockchain pool ID from the transaction
             const blockchainPoolId = await getPoolIdFromTransaction(transactionData.txHash);
-            
+
             if (blockchainPoolId === null) {
                 console.error(`Failed to parse pool ID from transaction ${transactionData.txHash}`);
                 // Fallback to using database ID as pool ID
                 const fallbackPoolId = poolCreationPool.id;
                 console.log(`Using fallback pool ID: ${fallbackPoolId}`);
-                
+
                 await updateDeploymentStatus({
                     poolId: poolCreationPool.id,
                     status: 'POOL_CREATED',
-                    txData: { 
+                    txData: {
                         pool_creation_tx_hash: transactionData.txHash,
                         pool_id: fallbackPoolId
                     }
                 });
             } else {
                 console.log(`Parsed blockchain pool ID: ${blockchainPoolId}`);
-                
+
                 // Update pool status to POOL_CREATED with correct blockchain pool ID
                 await updateDeploymentStatus({
                     poolId: poolCreationPool.id,
                     status: 'POOL_CREATED',
-                    txData: { 
+                    txData: {
                         pool_creation_tx_hash: transactionData.txHash,
                         pool_id: blockchainPoolId
                     }
@@ -146,7 +146,7 @@ webhooksRouter.post("/circle", async (req: Request, res: Response, next: NextFun
             // Phase 2: Configure pool settings (enable borrowing)
             const poolManagerAddress = process.env.POOL_MANAGER_ADDRESS;
             if (!poolManagerAddress) {
-                throw new Error("Missing POOL_MANAGER_ADDRESS environment variable");
+                throw new Error('Missing POOL_MANAGER_ADDRESS environment variable');
             }
 
             // Use the blockchain pool ID (either parsed or fallback)
@@ -183,11 +183,11 @@ webhooksRouter.post("/circle", async (req: Request, res: Response, next: NextFun
 
         if (configPool && configPool.pool_config_tx_id === transactionData.id && transactionData.state === 'CONFIRMED') {
             console.log(`Pool configuration confirmed for pool ${configPool.id}`);
-            
+
             await updateDeploymentStatus({
                 poolId: configPool.id,
                 status: 'POOL_CONFIGURED',
-                txData: { 
+                txData: {
                     pool_config_tx_hash: transactionData.txHash
                 }
             });
@@ -195,14 +195,14 @@ webhooksRouter.post("/circle", async (req: Request, res: Response, next: NextFun
             // Phase 3: Deploy loans
             const loanData = JSON.parse(configPool.loan_data);
             const originatorAddress = loanData[0]?.originator_address;
-            
+
             if (!originatorAddress) {
-                throw new Error("Missing originator address in loan data");
+                throw new Error('Missing originator address in loan data');
             }
 
             const poolManagerAddress = process.env.POOL_MANAGER_ADDRESS;
             if (!poolManagerAddress) {
-                throw new Error("Missing POOL_MANAGER_ADDRESS environment variable");
+                throw new Error('Missing POOL_MANAGER_ADDRESS environment variable');
             }
 
             const loanDeployment = await deployLoans({
@@ -238,11 +238,11 @@ webhooksRouter.post("/circle", async (req: Request, res: Response, next: NextFun
 
         if (loanDeploymentPool && loanDeploymentPool.loans_creation_tx_id === transactionData.id && transactionData.state === 'CONFIRMED') {
             console.log(`Loan deployment confirmed for pool ${loanDeploymentPool.id}`);
-            
+
             await updateDeploymentStatus({
                 poolId: loanDeploymentPool.id,
                 status: 'DEPLOYED',
-                txData: { 
+                txData: {
                     loans_creation_tx_hash: transactionData.txHash
                 }
             });
@@ -284,15 +284,14 @@ webhooksRouter.post("/circle", async (req: Request, res: Response, next: NextFun
         }
 
         return res.status(200).json({ success: true });
-
     } catch (error: any) {
-        console.error("Webhook error:", error);
+        console.error('Webhook error:', error);
         next(error);
     }
 });
 
 // GET /api/webhooks/status - Get current connection status (for debugging)
-webhooksRouter.get("/status", (req: Request, res: Response) => {
+webhooksRouter.get('/status', (req: Request, res: Response) => {
     return res.status(200).json({
         success: true,
         data: {
@@ -302,4 +301,4 @@ webhooksRouter.get("/status", (req: Request, res: Response) => {
     });
 });
 
-export default webhooksRouter; 
+export default webhooksRouter;

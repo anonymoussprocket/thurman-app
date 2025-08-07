@@ -1,6 +1,6 @@
-import { User, Prisma, UserRole, UserStatus } from "@prisma/client";
-import bcrypt from "bcrypt";
-import db from "../../utils/prismaClient";
+import { User, Prisma, UserRole, UserStatus } from '@prisma/client';
+import bcrypt from 'bcrypt';
+import db from '../../utils/prismaClient';
 
 const SALT_ROUNDS = 10;
 
@@ -33,12 +33,11 @@ export async function createUser(email: string, password: string): Promise<User>
             data: {
                 email: email,
                 password: encryptedPassword
-            },
+            }
         });
         return user;
     } catch (err: any) {
-
-        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
             throw new Error(`A user with email ${email} already exists.`);
         }
 
@@ -48,7 +47,7 @@ export async function createUser(email: string, password: string): Promise<User>
 
 export async function validateUser(userEmail: string, password: string): Promise<ValidationResult> {
     if (!userEmail || !password) {
-        throw new Error("Email and password are required");
+        throw new Error('Email and password are required');
     }
 
     try {
@@ -71,11 +70,11 @@ export async function validateUser(userEmail: string, password: string): Promise
                         blockchains: {
                             select: {
                                 chainId: true,
-                                name: true,
+                                name: true
                             }
                         }
                     }
-                },
+                }
             }
         });
 
@@ -96,12 +95,8 @@ export async function validateUser(userEmail: string, password: string): Promise
             isValid
         };
     } catch (err) {
-        console.error("User validation error:", err);
-        throw new Error(
-            err instanceof Error
-                ? `Failed to validate user: ${err.message}`
-                : "Failed to validate user"
-        );
+        console.error('User validation error:', err);
+        throw new Error(err instanceof Error ? `Failed to validate user: ${err.message}` : 'Failed to validate user');
     }
 }
 
@@ -125,11 +120,11 @@ export async function getUser(userEmail: string): Promise<ValidatedUserData | nu
                         blockchains: {
                             select: {
                                 chainId: true,
-                                name: true,
+                                name: true
                             }
                         }
                     }
-                },
+                }
             }
         });
 

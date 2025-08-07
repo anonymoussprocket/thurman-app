@@ -1,4 +1,4 @@
-import { parseUnits } from "ethers";
+import { parseUnits } from 'ethers';
 
 // ============================================================================
 // PARAMETER FORMATTING UTILITIES
@@ -42,13 +42,13 @@ export const formatAddress = (address: string): string => {
     if (!address || typeof address !== 'string') {
         throw new Error(`Invalid address: ${address}`);
     }
-    
+
     // Basic Ethereum address validation
     const addressRegex = /^0x[a-fA-F0-9]{40}$/;
     if (!addressRegex.test(address)) {
         throw new Error(`Invalid Ethereum address format: ${address}`);
     }
-    
+
     return address.toLowerCase();
 };
 
@@ -82,15 +82,11 @@ export const formatUSDCAmount = (weiAmount: string): string => {
  * @param maxAmount - Maximum allowed amount (default: 1000000)
  * @returns True if valid
  */
-export const validateUSDCAmount = (
-    amount: string, 
-    minAmount: number = 0.01, 
-    maxAmount: number = 1000000
-): boolean => {
+export const validateUSDCAmount = (amount: string, minAmount: number = 0.01, maxAmount: number = 1000000): boolean => {
     try {
         const parsedAmount = parseFloat(amount);
         return !isNaN(parsedAmount) && parsedAmount >= minAmount && parsedAmount <= maxAmount;
     } catch {
         return false;
     }
-}; 
+};

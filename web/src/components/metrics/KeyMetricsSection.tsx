@@ -12,27 +12,15 @@ export function KeyMetricsSection({ metrics, loading }: KeyMetricsSectionProps) 
     <Box sx={{ mb: 10 }}>
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>
-          <MetricCard 
-            label="Active Loans"
-            value={metrics?.activeLoans || "0"}
-            loading={loading}
-          />
+          <MetricCard label='Active Loans' value={metrics?.activeLoans || '0'} loading={loading} />
         </Grid>
         <Grid item xs={12} md={4}>
-          <MetricCard 
-            label="Loss Rate"
-            value={metrics?.lossRate || "0%"}
-            loading={loading}
-          />
+          <MetricCard label='Loss Rate' value={metrics?.lossRate || '0%'} loading={loading} />
         </Grid>
         <Grid item xs={12} md={4}>
-          <MetricCard 
-            label="Interest & Fees"
-            value={metrics?.interestFees || "0"}
-            loading={loading}
-          />
+          <MetricCard label='Interest & Fees' value={metrics?.interestFees || '0'} loading={loading} />
         </Grid>
       </Grid>
     </Box>
   );
-} 
+}

@@ -1,5 +1,5 @@
-import { Prisma, LoanPool as PrismaLoanPool, User } from "@prisma/client";
-import db from "../../utils/prismaClient";
+import { Prisma, LoanPool as PrismaLoanPool, User } from '@prisma/client';
+import db from '../../utils/prismaClient';
 
 type LoanPoolWithCreator = PrismaLoanPool & {
     creator: User;
@@ -38,7 +38,7 @@ type CreateLoanPoolParams = {
         risk_grade?: string;
     }[];
     userId: number;
-}
+};
 
 type UpdateDeploymentStatusParams = {
     poolId: number;
@@ -53,7 +53,7 @@ type UpdateDeploymentStatusParams = {
         pool_id?: number;
         vault_address?: string;
     };
-}
+};
 
 type LoanPoolWithRelations = {
     id: number;
@@ -103,7 +103,7 @@ type LoanPoolWithRelations = {
         role: string;
         status: string;
     } | null;
-}
+};
 
 type LoanPoolDetails = LoanPoolWithRelations & {
     loans?: {
@@ -117,7 +117,7 @@ type LoanPoolDetails = LoanPoolWithRelations & {
         loan_purpose?: string;
         risk_grade?: string;
     }[];
-}
+};
 
 // Helper to calculate metrics
 function calculateMetrics(loanData: any[]): {
@@ -128,26 +128,18 @@ function calculateMetrics(loanData: any[]): {
 } {
     const total_loans = loanData.length;
     const total_principal = loanData.reduce((sum, l) => sum + Number(l.principal), 0);
-    const avg_interest_rate = total_loans > 0 
-        ? loanData.reduce((sum, l) => sum + Number(l.interest_rate), 0) / total_loans 
-        : 0;
-    const avg_term_months = total_loans > 0 
-        ? Math.round(loanData.reduce((sum, l) => sum + Number(l.term_months), 0) / total_loans) 
-        : 0;
-    
+    const avg_interest_rate = total_loans > 0 ? loanData.reduce((sum, l) => sum + Number(l.interest_rate), 0) / total_loans : 0;
+    const avg_term_months = total_loans > 0 ? Math.round(loanData.reduce((sum, l) => sum + Number(l.term_months), 0) / total_loans) : 0;
+
     return {
         total_loans,
         total_principal,
         avg_interest_rate,
-        avg_term_months,
+        avg_term_months
     };
 }
 
-export async function createLoanPool({
-    formData,
-    loanData,
-    userId
-}: CreateLoanPoolParams): Promise<LoanPoolWithRelations> {
+export async function createLoanPool({ formData, loanData, userId }: CreateLoanPoolParams): Promise<LoanPoolWithRelations> {
     try {
         const metrics = calculateMetrics(loanData);
         const created = await db.loanPool.create({
@@ -159,16 +151,16 @@ export async function createLoanPool({
                 avg_interest_rate: metrics.avg_interest_rate,
                 avg_term_months: metrics.avg_term_months,
                 created_by: userId,
-                status: 'PENDING',
+                status: 'PENDING'
             },
             include: {
-                creator: true,
-            },
+                creator: true
+            }
         });
         return created as unknown as LoanPoolWithRelations;
     } catch (err) {
-        console.error("Error creating loan pool:", err);
-        throw new Error(err instanceof Error ? `Failed to create loan pool: ${err.message}` : "Failed to create loan pool");
+        console.error('Error creating loan pool:', err);
+        throw new Error(err instanceof Error ? `Failed to create loan pool: ${err.message}` : 'Failed to create loan pool');
     }
 }
 
@@ -177,57 +169,57 @@ export async function findUserPools(userId: number): Promise<LoanPoolWithRelatio
         return db.loanPool.findMany({
             where: { created_by: userId },
             include: { creator: true },
-            orderBy: { created_at: 'desc' },
+            orderBy: { created_at: 'desc' }
         }) as unknown as Promise<LoanPoolWithRelations[]>;
     } catch (err) {
-        console.error("Error finding user pools:", err);
-        throw new Error(err instanceof Error ? `Failed to find user pools: ${err.message}` : "Failed to find user pools");
+        console.error('Error finding user pools:', err);
+        throw new Error(err instanceof Error ? `Failed to find user pools: ${err.message}` : 'Failed to find user pools');
     }
 }
 
 export async function findPendingPools(): Promise<LoanPoolWithRelations[]> {
     try {
         return db.loanPool.findMany({
-            where: { 
-                status: { 
+            where: {
+                status: {
                     in: [
-                        'PENDING',           // Need approval
-                        'APPROVED',          // Approved but not deployed
-                        'DEPLOYING_POOL',    // In deployment process
-                        'POOL_CREATED',      // Pool created, needs next step
-                        'CONFIGURING_POOL',  // Configuring pool
-                        'POOL_CONFIGURED',   // Pool configured, needs loans
-                        'DEPLOYING_LOANS',   // Deploying loans
-                        'FAILED'             // Failed deployments need attention
+                        'PENDING', // Need approval
+                        'APPROVED', // Approved but not deployed
+                        'DEPLOYING_POOL', // In deployment process
+                        'POOL_CREATED', // Pool created, needs next step
+                        'CONFIGURING_POOL', // Configuring pool
+                        'POOL_CONFIGURED', // Pool configured, needs loans
+                        'DEPLOYING_LOANS', // Deploying loans
+                        'FAILED' // Failed deployments need attention
                     ] as any
-                } 
+                }
             },
             include: { creator: true },
-            orderBy: { created_at: 'desc' },
+            orderBy: { created_at: 'desc' }
         }) as unknown as Promise<LoanPoolWithRelations[]>;
     } catch (err) {
-        console.error("Error finding pending pools:", err);
-        throw new Error(err instanceof Error ? `Failed to find pending pools: ${err.message}` : "Failed to find pending pools");
+        console.error('Error finding pending pools:', err);
+        throw new Error(err instanceof Error ? `Failed to find pending pools: ${err.message}` : 'Failed to find pending pools');
     }
 }
 
 export async function findActivePools(): Promise<LoanPoolWithRelations[]> {
     try {
         return db.loanPool.findMany({
-            where: { 
-                status: { 
-                    in: ['DEPLOYED', 'POOL_CREATED', 'DEPLOYING_LOANS'] 
-                } 
+            where: {
+                status: {
+                    in: ['DEPLOYED', 'POOL_CREATED', 'DEPLOYING_LOANS']
+                }
             },
-            include: { 
+            include: {
                 creator: true,
-                approver: true 
+                approver: true
             },
-            orderBy: { created_at: 'desc' },
+            orderBy: { created_at: 'desc' }
         }) as unknown as Promise<LoanPoolWithRelations[]>;
     } catch (err) {
-        console.error("Error finding active pools:", err);
-        throw new Error(err instanceof Error ? `Failed to find active pools: ${err.message}` : "Failed to find active pools");
+        console.error('Error finding active pools:', err);
+        throw new Error(err instanceof Error ? `Failed to find active pools: ${err.message}` : 'Failed to find active pools');
     }
 }
 
@@ -240,16 +232,16 @@ export async function approveLoanPool(poolId: number, adminId: number, walletId:
                 approved_by: adminId,
                 approved_at: new Date(),
                 deployed_by_wallet_id: walletId,
-                rejection_reason: null,
+                rejection_reason: null
             },
             include: {
                 creator: true,
-                approver: true,
-            },
+                approver: true
+            }
         }) as Promise<LoanPoolWithRelations | null>;
     } catch (err) {
-        console.error("Error approving loan pool:", err);
-        throw new Error(err instanceof Error ? `Failed to approve loan pool: ${err.message}` : "Failed to approve loan pool");
+        console.error('Error approving loan pool:', err);
+        throw new Error(err instanceof Error ? `Failed to approve loan pool: ${err.message}` : 'Failed to approve loan pool');
     }
 }
 
@@ -261,39 +253,35 @@ export async function rejectLoanPool(poolId: number, adminId: number, reason: st
                 status: 'REJECTED',
                 approved_by: adminId,
                 approved_at: new Date(),
-                rejection_reason: reason,
+                rejection_reason: reason
             },
             include: {
                 creator: true,
-                approver: true,
-            },
+                approver: true
+            }
         }) as Promise<LoanPoolWithRelations | null>;
     } catch (err) {
-        console.error("Error rejecting loan pool:", err);
-        throw new Error(err instanceof Error ? `Failed to reject loan pool: ${err.message}` : "Failed to reject loan pool");
+        console.error('Error rejecting loan pool:', err);
+        throw new Error(err instanceof Error ? `Failed to reject loan pool: ${err.message}` : 'Failed to reject loan pool');
     }
 }
 
-export async function updateDeploymentStatus({
-    poolId,
-    status,
-    txData
-}: UpdateDeploymentStatusParams): Promise<LoanPoolWithRelations | null> {
+export async function updateDeploymentStatus({ poolId, status, txData }: UpdateDeploymentStatusParams): Promise<LoanPoolWithRelations | null> {
     try {
         return db.loanPool.update({
             where: { id: poolId },
             data: {
                 status: status as any,
-                ...txData,
+                ...txData
             },
             include: {
                 creator: true,
-                approver: true,
-            },
+                approver: true
+            }
         }) as Promise<LoanPoolWithRelations | null>;
     } catch (err) {
-        console.error("Error updating deployment status:", err);
-        throw new Error(err instanceof Error ? `Failed to update deployment status: ${err.message}` : "Failed to update deployment status");
+        console.error('Error updating deployment status:', err);
+        throw new Error(err instanceof Error ? `Failed to update deployment status: ${err.message}` : 'Failed to update deployment status');
     }
 }
 
@@ -301,20 +289,16 @@ export async function findByTransactionId(txId: string): Promise<LoanPoolWithRel
     try {
         return db.loanPool.findFirst({
             where: {
-                OR: [
-                    { pool_creation_tx_id: txId },
-                    { pool_config_tx_id: txId },
-                    { loans_creation_tx_id: txId },
-                ],
+                OR: [{ pool_creation_tx_id: txId }, { pool_config_tx_id: txId }, { loans_creation_tx_id: txId }]
             },
             include: {
                 creator: true,
-                approver: true,
-            },
+                approver: true
+            }
         }) as Promise<LoanPoolWithRelations | null>;
     } catch (err) {
-        console.error("Error finding pool by transaction ID:", err);
-        throw new Error(err instanceof Error ? `Failed to find pool by transaction ID: ${err.message}` : "Failed to find pool by transaction ID");
+        console.error('Error finding pool by transaction ID:', err);
+        throw new Error(err instanceof Error ? `Failed to find pool by transaction ID: ${err.message}` : 'Failed to find pool by transaction ID');
     }
 }
 
@@ -324,8 +308,8 @@ export async function getLoanPoolDetails(poolId: number, includeLoans = false): 
             where: { id: poolId },
             include: {
                 creator: true,
-                approver: true,
-            },
+                approver: true
+            }
         });
         if (!pool) return null;
         let parsedLoans = undefined;
@@ -340,11 +324,11 @@ export async function getLoanPoolDetails(poolId: number, includeLoans = false): 
             ...pool,
             loans: includeLoans ? parsedLoans : undefined,
             creator: pool.creator,
-            approver: pool.approver,
+            approver: pool.approver
         } as LoanPoolDetails;
     } catch (err) {
-        console.error("Error getting loan pool details:", err);
-        throw new Error(err instanceof Error ? `Failed to get loan pool details: ${err.message}` : "Failed to get loan pool details");
+        console.error('Error getting loan pool details:', err);
+        throw new Error(err instanceof Error ? `Failed to get loan pool details: ${err.message}` : 'Failed to get loan pool details');
     }
 }
 
@@ -357,5 +341,5 @@ export const LoanPool = {
     rejectLoanPool,
     updateDeploymentStatus,
     findByTransactionId,
-    getLoanPoolDetails,
-}; 
+    getLoanPoolDetails
+};

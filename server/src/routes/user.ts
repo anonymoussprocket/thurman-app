@@ -1,21 +1,21 @@
-import express, { Router } from "express";
-import { getAuthenticatedUser } from "../services/auth";
-import { requireAuth, AuthRequest } from "../middleware/auth";
-import { getUserPortfolio, isValidUserAddress } from "../services/portfolioService";
+import express, { Router } from 'express';
+import { getAuthenticatedUser } from '../services/auth';
+import { requireAuth, AuthRequest } from '../middleware/auth';
+import { getUserPortfolio, isValidUserAddress } from '../services/portfolioService';
 
 var userRouter: Router = express.Router();
 
 // GET /api/user/me - Get current authenticated user data
-userRouter.get("/me", requireAuth, async (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
+userRouter.get('/me', requireAuth, async (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
     try {
         // req.user is set by the requireAuth middleware
         const userEmail = req.user?.email;
-        
+
         if (!userEmail) {
             return res.status(401).json({
                 success: false,
-                error: "Unauthorized",
-                message: "User email not found in token"
+                error: 'Unauthorized',
+                message: 'User email not found in token'
             });
         }
 
@@ -24,19 +24,18 @@ userRouter.get("/me", requireAuth, async (req: AuthRequest, res: express.Respons
         if (!user) {
             return res.status(404).json({
                 success: false,
-                error: "User not found",
-                message: "User not found in database"
+                error: 'User not found',
+                message: 'User not found in database'
             });
         }
 
         return res.status(200).json({
             success: true,
-            message: "User data retrieved successfully",
+            message: 'User data retrieved successfully',
             user
         });
-
     } catch (err: any) {
-        console.error("Get user error:", err);
+        console.error('Get user error:', err);
         next(err); // Pass to error handler middleware
     }
 });
@@ -46,7 +45,7 @@ userRouter.get("/me", requireAuth, async (req: AuthRequest, res: express.Respons
  * Get user's complete portfolio data
  * Requires authentication - user can only access own portfolio
  */
-userRouter.get("/portfolio/:userAddress", requireAuth, async (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
+userRouter.get('/portfolio/:userAddress', requireAuth, async (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
     try {
         const { userAddress } = req.params;
         const authenticatedUser = req.user;
@@ -55,19 +54,19 @@ userRouter.get("/portfolio/:userAddress", requireAuth, async (req: AuthRequest, 
         if (!isValidUserAddress(userAddress)) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid user address format"
+                message: 'Invalid user address format'
             });
         }
 
         // Ensure user can only access their own portfolio
         // Get the first wallet address from user's wallets
         const userWalletAddress = authenticatedUser?.wallets?.[0]?.address;
-        
+
         if (!userWalletAddress || userWalletAddress.toLowerCase() !== userAddress.toLowerCase()) {
             console.warn(`Unauthorized portfolio access attempt: ${userWalletAddress || 'unknown'} tried to access ${userAddress}`);
             return res.status(403).json({
                 success: false,
-                message: "You can only access your own portfolio"
+                message: 'You can only access your own portfolio'
             });
         }
 
@@ -79,15 +78,14 @@ userRouter.get("/portfolio/:userAddress", requireAuth, async (req: AuthRequest, 
         res.json({
             success: true,
             data: portfolio,
-            message: "Portfolio data retrieved successfully"
+            message: 'Portfolio data retrieved successfully'
         });
-
     } catch (error: any) {
-        console.error("Error getting portfolio:", error);
-        
+        console.error('Error getting portfolio:', error);
+
         res.status(500).json({
             success: false,
-            message: "Failed to get portfolio data",
+            message: 'Failed to get portfolio data',
             error: error.message
         });
     }

@@ -1,28 +1,14 @@
-import express, { Router, Request, Response } from "express";
-import { requireAuth } from "../middleware/auth";
-import { requireRole } from "../middleware/auth";
-import { 
-    executeFullDepositRequest,
-    createShareClaim,
-    createDepositFulfillment
-} from "../services/circleDeposit";
-import { 
-    getUserWalletId,
-    getAdminWalletId
-} from "../services/walletService";
-import { 
-    parseUSDCAmount,
-    validateUSDCAmount,
-    formatAddress
-} from "../services/utils";
-import { 
-    getUserDepositStatus,
-    getAllPendingDeposits
-} from "../services/depositStateManager";
-import db from "../utils/prismaClient";
+import express, { Router, Request, Response } from 'express';
+import { requireAuth } from '../middleware/auth';
+import { requireRole } from '../middleware/auth';
+import { executeFullDepositRequest, createShareClaim, createDepositFulfillment } from '../services/circleDeposit';
+import { getUserWalletId, getAdminWalletId } from '../services/walletService';
+import { parseUSDCAmount, validateUSDCAmount, formatAddress } from '../services/utils';
+import { getUserDepositStatus, getAllPendingDeposits } from '../services/depositStateManager';
+import db from '../utils/prismaClient';
 
 // Import the AuthRequest interface from middleware
-import { AuthRequest } from "../middleware/auth";
+import { AuthRequest } from '../middleware/auth';
 
 // Use AuthRequest type for authenticated routes
 type AuthenticatedRequest = AuthRequest;
@@ -43,7 +29,7 @@ const validateDepositAmount = async (amount: string, poolId: number): Promise<{ 
     try {
         // Basic amount validation
         if (!validateUSDCAmount(amount)) {
-            return { valid: false, error: "Invalid deposit amount" };
+            return { valid: false, error: 'Invalid deposit amount' };
         }
 
         // TODO: Query pool manager contract for actual limits
@@ -61,7 +47,7 @@ const validateDepositAmount = async (amount: string, poolId: number): Promise<{ 
 
         return { valid: true };
     } catch (error: any) {
-        return { valid: false, error: "Failed to validate deposit amount" };
+        return { valid: false, error: 'Failed to validate deposit amount' };
     }
 };
 
@@ -76,7 +62,7 @@ const validateUserBalance = async (userId: number, amount: string): Promise<{ va
         // TODO: Query Circle API for actual USDC balance
         // For now, assume sufficient balance (implement actual balance checking)
         console.log(`Validating balance for user ${userId}, amount: ${amount} USDC`);
-        
+
         // Placeholder for actual balance validation
         // const balance = await getUSDCBalance(userId);
         // if (balance < parseFloat(amount)) {
@@ -85,7 +71,7 @@ const validateUserBalance = async (userId: number, amount: string): Promise<{ va
 
         return { valid: true };
     } catch (error: any) {
-        return { valid: false, error: "Failed to validate user balance" };
+        return { valid: false, error: 'Failed to validate user balance' };
     }
 };
 
@@ -100,12 +86,12 @@ const validatePoolStatus = async (poolId: number): Promise<{ valid: boolean; err
         const pool = await db.loanPool.findFirst({
             where: {
                 pool_id: poolId,
-                status: { in: ["POOL_CREATED", "POOL_CONFIGURED", "DEPLOYING_LOANS", "DEPLOYED"] }
+                status: { in: ['POOL_CREATED', 'POOL_CONFIGURED', 'DEPLOYING_LOANS', 'DEPLOYED'] }
             }
         });
 
         if (!pool) {
-            return { valid: false, error: "Pool not found or not active" };
+            return { valid: false, error: 'Pool not found or not active' };
         }
 
         // TODO: Query pool manager contract for actual deposit settings
@@ -113,7 +99,7 @@ const validatePoolStatus = async (poolId: number): Promise<{ valid: boolean; err
 
         return { valid: true };
     } catch (error: any) {
-        return { valid: false, error: "Failed to validate pool status" };
+        return { valid: false, error: 'Failed to validate pool status' };
     }
 };
 
@@ -129,7 +115,7 @@ const validateClaimableAmount = async (userId: number, poolId: number, amount: s
         // TODO: Query pool manager contract for actual claimable amount
         // For now, assume user has sufficient claimable amount
         console.log(`Validating claimable amount for user ${userId}, pool ${poolId}, amount: ${amount} USDC`);
-        
+
         // Placeholder for actual claimable amount validation
         // const claimableAmount = await getClaimableAmount(userId, poolId);
         // if (claimableAmount < parseFloat(amount)) {
@@ -138,7 +124,7 @@ const validateClaimableAmount = async (userId: number, poolId: number, amount: s
 
         return { valid: true };
     } catch (error: any) {
-        return { valid: false, error: "Failed to validate claimable amount" };
+        return { valid: false, error: 'Failed to validate claimable amount' };
     }
 };
 
@@ -150,7 +136,7 @@ const validateClaimableAmount = async (userId: number, poolId: number, amount: s
  * POST /api/deposits/request
  * Request a deposit to a lending pool (two-step: USDC approval + deposit request)
  */
-depositsRouter.post("/request", requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+depositsRouter.post('/request', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
     try {
         const { poolId, amount } = req.body;
         const userId = req.user?.id;
@@ -158,7 +144,7 @@ depositsRouter.post("/request", requireAuth, async (req: AuthenticatedRequest, r
         if (!userId) {
             return res.status(401).json({
                 success: false,
-                error: "User authentication required"
+                error: 'User authentication required'
             });
         }
 
@@ -166,7 +152,7 @@ depositsRouter.post("/request", requireAuth, async (req: AuthenticatedRequest, r
         if (!poolId || !amount) {
             return res.status(400).json({
                 success: false,
-                error: "Pool ID and amount are required"
+                error: 'Pool ID and amount are required'
             });
         }
 
@@ -174,7 +160,7 @@ depositsRouter.post("/request", requireAuth, async (req: AuthenticatedRequest, r
         if (!Number.isInteger(poolId) || poolId < 0) {
             return res.status(400).json({
                 success: false,
-                error: "Invalid pool ID"
+                error: 'Invalid pool ID'
             });
         }
 
@@ -212,7 +198,7 @@ depositsRouter.post("/request", requireAuth, async (req: AuthenticatedRequest, r
         } catch (error: any) {
             return res.status(400).json({
                 success: false,
-                error: "User wallet not found. Please contact support."
+                error: 'User wallet not found. Please contact support.'
             });
         }
 
@@ -224,22 +210,17 @@ depositsRouter.post("/request", requireAuth, async (req: AuthenticatedRequest, r
         if (!userWallet?.address) {
             return res.status(400).json({
                 success: false,
-                error: "User wallet address not found"
+                error: 'User wallet address not found'
             });
         }
 
         // Execute full deposit request (USDC approval + deposit request)
-        const result = await executeFullDepositRequest(
-            poolId,
-            amount,
-            userWallet.address,
-            userWalletId
-        );
+        const result = await executeFullDepositRequest(poolId, amount, userWallet.address, userWalletId);
 
         if (!result.success) {
             return res.status(500).json({
                 success: false,
-                error: result.error || "Failed to process deposit request"
+                error: result.error || 'Failed to process deposit request'
             });
         }
 
@@ -252,16 +233,15 @@ depositsRouter.post("/request", requireAuth, async (req: AuthenticatedRequest, r
                 poolId,
                 amount,
                 userAddress: userWallet.address,
-                estimatedProcessingTime: "5-10 minutes",
-                status: "pending"
+                estimatedProcessingTime: '5-10 minutes',
+                status: 'pending'
             }
         });
-
     } catch (error: any) {
-        console.error("Deposit request error:", error);
+        console.error('Deposit request error:', error);
         return res.status(500).json({
             success: false,
-            error: "Internal server error"
+            error: 'Internal server error'
         });
     }
 });
@@ -274,7 +254,7 @@ depositsRouter.post("/request", requireAuth, async (req: AuthenticatedRequest, r
  * POST /api/deposits/claim
  * Claim shares from a fulfilled deposit
  */
-depositsRouter.post("/claim", requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+depositsRouter.post('/claim', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
     try {
         const { poolId, amount } = req.body;
         const userId = req.user?.id;
@@ -282,7 +262,7 @@ depositsRouter.post("/claim", requireAuth, async (req: AuthenticatedRequest, res
         if (!userId) {
             return res.status(401).json({
                 success: false,
-                error: "User authentication required"
+                error: 'User authentication required'
             });
         }
 
@@ -290,7 +270,7 @@ depositsRouter.post("/claim", requireAuth, async (req: AuthenticatedRequest, res
         if (!poolId || !amount) {
             return res.status(400).json({
                 success: false,
-                error: "Pool ID and amount are required"
+                error: 'Pool ID and amount are required'
             });
         }
 
@@ -298,7 +278,7 @@ depositsRouter.post("/claim", requireAuth, async (req: AuthenticatedRequest, res
         if (!Number.isInteger(poolId) || poolId < 0) {
             return res.status(400).json({
                 success: false,
-                error: "Invalid pool ID"
+                error: 'Invalid pool ID'
             });
         }
 
@@ -306,7 +286,7 @@ depositsRouter.post("/claim", requireAuth, async (req: AuthenticatedRequest, res
         if (!validateUSDCAmount(amount)) {
             return res.status(400).json({
                 success: false,
-                error: "Invalid claim amount"
+                error: 'Invalid claim amount'
             });
         }
 
@@ -326,7 +306,7 @@ depositsRouter.post("/claim", requireAuth, async (req: AuthenticatedRequest, res
         } catch (error: any) {
             return res.status(400).json({
                 success: false,
-                error: "User wallet not found. Please contact support."
+                error: 'User wallet not found. Please contact support.'
             });
         }
 
@@ -338,22 +318,17 @@ depositsRouter.post("/claim", requireAuth, async (req: AuthenticatedRequest, res
         if (!userWallet?.address) {
             return res.status(400).json({
                 success: false,
-                error: "User wallet address not found"
+                error: 'User wallet address not found'
             });
         }
 
         // Create share claim transaction
-        const result = await createShareClaim(
-            poolId,
-            amount,
-            userWallet.address,
-            userWalletId
-        );
+        const result = await createShareClaim(poolId, amount, userWallet.address, userWalletId);
 
-        if (result.status === "FAILED") {
+        if (result.status === 'FAILED') {
             return res.status(500).json({
                 success: false,
-                error: result.error || "Failed to create share claim"
+                error: result.error || 'Failed to create share claim'
             });
         }
 
@@ -365,16 +340,15 @@ depositsRouter.post("/claim", requireAuth, async (req: AuthenticatedRequest, res
                 poolId,
                 amount,
                 userAddress: userWallet.address,
-                estimatedProcessingTime: "3-5 minutes",
-                status: "pending"
+                estimatedProcessingTime: '3-5 minutes',
+                status: 'pending'
             }
         });
-
     } catch (error: any) {
-        console.error("Share claim error:", error);
+        console.error('Share claim error:', error);
         return res.status(500).json({
             success: false,
-            error: "Internal server error"
+            error: 'Internal server error'
         });
     }
 });
@@ -387,7 +361,7 @@ depositsRouter.post("/claim", requireAuth, async (req: AuthenticatedRequest, res
  * POST /api/admin/deposits/fulfill
  * Admin endpoint to fulfill pending deposits
  */
-depositsRouter.post("/admin/fulfill", requireAuth, requireRole(["ADMIN"]), async (req: AuthenticatedRequest, res: Response) => {
+depositsRouter.post('/admin/fulfill', requireAuth, requireRole(['ADMIN']), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const { poolId, userAddress, amount } = req.body;
         const adminUserId = req.user?.id;
@@ -395,7 +369,7 @@ depositsRouter.post("/admin/fulfill", requireAuth, requireRole(["ADMIN"]), async
         if (!adminUserId) {
             return res.status(401).json({
                 success: false,
-                error: "Admin authentication required"
+                error: 'Admin authentication required'
             });
         }
 
@@ -403,7 +377,7 @@ depositsRouter.post("/admin/fulfill", requireAuth, requireRole(["ADMIN"]), async
         if (!poolId || !userAddress || !amount) {
             return res.status(400).json({
                 success: false,
-                error: "Pool ID, user address, and amount are required"
+                error: 'Pool ID, user address, and amount are required'
             });
         }
 
@@ -411,7 +385,7 @@ depositsRouter.post("/admin/fulfill", requireAuth, requireRole(["ADMIN"]), async
         if (!Number.isInteger(poolId) || poolId < 0) {
             return res.status(400).json({
                 success: false,
-                error: "Invalid pool ID"
+                error: 'Invalid pool ID'
             });
         }
 
@@ -421,7 +395,7 @@ depositsRouter.post("/admin/fulfill", requireAuth, requireRole(["ADMIN"]), async
         } catch (error: any) {
             return res.status(400).json({
                 success: false,
-                error: "Invalid user address"
+                error: 'Invalid user address'
             });
         }
 
@@ -429,7 +403,7 @@ depositsRouter.post("/admin/fulfill", requireAuth, requireRole(["ADMIN"]), async
         if (!validateUSDCAmount(amount)) {
             return res.status(400).json({
                 success: false,
-                error: "Invalid fulfillment amount"
+                error: 'Invalid fulfillment amount'
             });
         }
 
@@ -449,22 +423,17 @@ depositsRouter.post("/admin/fulfill", requireAuth, requireRole(["ADMIN"]), async
         } catch (error: any) {
             return res.status(500).json({
                 success: false,
-                error: "Admin wallet not configured"
+                error: 'Admin wallet not configured'
             });
         }
 
         // Create deposit fulfillment transaction
-        const result = await createDepositFulfillment(
-            poolId,
-            amount,
-            userAddress,
-            adminWalletId
-        );
+        const result = await createDepositFulfillment(poolId, amount, userAddress, adminWalletId);
 
-        if (result.status === "FAILED") {
+        if (result.status === 'FAILED') {
             return res.status(500).json({
                 success: false,
-                error: result.error || "Failed to fulfill deposit"
+                error: result.error || 'Failed to fulfill deposit'
             });
         }
 
@@ -486,16 +455,15 @@ depositsRouter.post("/admin/fulfill", requireAuth, requireRole(["ADMIN"]), async
                 userAddress,
                 amount,
                 fulfilledBy: adminUserId,
-                estimatedProcessingTime: "2-3 minutes",
-                status: "pending"
+                estimatedProcessingTime: '2-3 minutes',
+                status: 'pending'
             }
         });
-
     } catch (error: any) {
-        console.error("Admin deposit fulfillment error:", error);
+        console.error('Admin deposit fulfillment error:', error);
         return res.status(500).json({
             success: false,
-            error: "Internal server error"
+            error: 'Internal server error'
         });
     }
 });
@@ -509,7 +477,7 @@ depositsRouter.post("/admin/fulfill", requireAuth, requireRole(["ADMIN"]), async
  * Get current deposit status for a user in a specific pool
  * No authentication required (public blockchain data)
  */
-depositsRouter.get("/status/:poolId/:userAddress", async (req: Request, res: Response) => {
+depositsRouter.get('/status/:poolId/:userAddress', async (req: Request, res: Response) => {
     try {
         const { poolId, userAddress } = req.params;
 
@@ -518,7 +486,7 @@ depositsRouter.get("/status/:poolId/:userAddress", async (req: Request, res: Res
         if (isNaN(poolIdNum) || poolIdNum < 0) {
             return res.status(400).json({
                 success: false,
-                error: "Invalid pool ID format"
+                error: 'Invalid pool ID format'
             });
         }
 
@@ -528,7 +496,7 @@ depositsRouter.get("/status/:poolId/:userAddress", async (req: Request, res: Res
         } catch (error: any) {
             return res.status(400).json({
                 success: false,
-                error: "Invalid user address format"
+                error: 'Invalid user address format'
             });
         }
 
@@ -537,7 +505,7 @@ depositsRouter.get("/status/:poolId/:userAddress", async (req: Request, res: Res
 
         // Generate ETag for caching
         const etag = `"${poolIdNum}-${userAddress.toLowerCase()}-${depositStatus.lastUpdated.getTime()}"`;
-        
+
         // Check if client has cached version
         if (req.headers['if-none-match'] === etag) {
             return res.status(304).end();
@@ -546,7 +514,7 @@ depositsRouter.get("/status/:poolId/:userAddress", async (req: Request, res: Res
         // Set cache headers for polling optimization
         res.set({
             'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
-            'ETag': etag,
+            ETag: etag,
             'Last-Modified': depositStatus.lastUpdated.toUTCString()
         });
 
@@ -563,12 +531,11 @@ depositsRouter.get("/status/:poolId/:userAddress", async (req: Request, res: Res
                 hasActivity: depositStatus.pending > 0 || depositStatus.claimable > 0 || depositStatus.claimed > 0
             }
         });
-
     } catch (error: any) {
-        console.error("Deposit status polling error:", error);
+        console.error('Deposit status polling error:', error);
         return res.status(500).json({
             success: false,
-            error: "Failed to retrieve deposit status"
+            error: 'Failed to retrieve deposit status'
         });
     }
 });
@@ -578,7 +545,7 @@ depositsRouter.get("/status/:poolId/:userAddress", async (req: Request, res: Res
  * Get all pending deposits for admin interface
  * Requires admin authentication
  */
-depositsRouter.get("/admin/pending", requireAuth, requireRole(["ADMIN"]), async (req: AuthenticatedRequest, res: Response) => {
+depositsRouter.get('/admin/pending', requireAuth, requireRole(['ADMIN']), async (req: AuthenticatedRequest, res: Response) => {
     try {
         // Get pagination parameters
         const page = parseInt(req.query.page as string) || 1;
@@ -593,7 +560,7 @@ depositsRouter.get("/admin/pending", requireAuth, requireRole(["ADMIN"]), async 
 
         // Generate ETag for caching
         const etag = `"pending-${allPendingDeposits.length}-${allPendingDeposits[0]?.timestamp?.getTime() || 0}"`;
-        
+
         // Check if client has cached version
         if (req.headers['if-none-match'] === etag) {
             return res.status(304).end();
@@ -602,7 +569,7 @@ depositsRouter.get("/admin/pending", requireAuth, requireRole(["ADMIN"]), async 
         // Set cache headers for polling optimization
         res.set({
             'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
-            'ETag': etag,
+            ETag: etag,
             'Last-Modified': new Date().toUTCString()
         });
 
@@ -615,7 +582,7 @@ depositsRouter.get("/admin/pending", requireAuth, requireRole(["ADMIN"]), async 
                     poolId: deposit.poolId,
                     userAddress: deposit.userAddress,
                     amount: deposit.amount,
-                    requestedAt: deposit.timestamp.toISOString(),
+                    requestedAt: deposit.timestamp.toISOString()
                     // Note: txHash is not available in current state manager
                     // Would need to be enhanced to track individual transactions
                 })),
@@ -629,12 +596,11 @@ depositsRouter.get("/admin/pending", requireAuth, requireRole(["ADMIN"]), async 
                 }
             }
         });
-
     } catch (error: any) {
-        console.error("Admin pending deposits polling error:", error);
+        console.error('Admin pending deposits polling error:', error);
         return res.status(500).json({
             success: false,
-            error: "Failed to retrieve pending deposits"
+            error: 'Failed to retrieve pending deposits'
         });
     }
 });
@@ -644,7 +610,7 @@ depositsRouter.get("/admin/pending", requireAuth, requireRole(["ADMIN"]), async 
  * Get all deposit activity for a specific user across all pools
  * No authentication required (public blockchain data)
  */
-depositsRouter.get("/user/:userAddress", async (req: Request, res: Response) => {
+depositsRouter.get('/user/:userAddress', async (req: Request, res: Response) => {
     try {
         const { userAddress } = req.params;
 
@@ -654,14 +620,14 @@ depositsRouter.get("/user/:userAddress", async (req: Request, res: Response) => 
         } catch (error: any) {
             return res.status(400).json({
                 success: false,
-                error: "Invalid user address format"
+                error: 'Invalid user address format'
             });
         }
 
         // Get all pools from database
         const pools = await db.loanPool.findMany({
             where: {
-                status: { in: ["POOL_CREATED", "POOL_CONFIGURED", "DEPLOYING_LOANS", "DEPLOYED"] }
+                status: { in: ['POOL_CREATED', 'POOL_CONFIGURED', 'DEPLOYING_LOANS', 'DEPLOYED'] }
             },
             select: {
                 id: true,
@@ -686,11 +652,12 @@ depositsRouter.get("/user/:userAddress", async (req: Request, res: Response) => 
                     lastUpdated: depositStatus.lastUpdated.toISOString(),
                     hasActivity: depositStatus.pending > 0 || depositStatus.claimable > 0 || depositStatus.claimed > 0
                 };
-            }).filter(deposit => deposit.hasActivity); // Only return pools with activity
+            })
+            .filter(deposit => deposit.hasActivity); // Only return pools with activity
 
         // Generate ETag for caching
         const etag = `"user-${userAddress.toLowerCase()}-${userDeposits.length}-${userDeposits[0]?.lastUpdated || 0}"`;
-        
+
         // Check if client has cached version
         if (req.headers['if-none-match'] === etag) {
             return res.status(304).end();
@@ -699,16 +666,19 @@ depositsRouter.get("/user/:userAddress", async (req: Request, res: Response) => 
         // Set cache headers for polling optimization
         res.set({
             'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
-            'ETag': etag,
+            ETag: etag,
             'Last-Modified': new Date().toUTCString()
         });
 
         // Calculate totals
-        const totals = userDeposits.reduce((acc, deposit) => ({
-            pending: acc.pending + deposit.pending,
-            claimable: acc.claimable + deposit.claimable,
-            claimed: acc.claimed + deposit.claimed
-        }), { pending: 0, claimable: 0, claimed: 0 });
+        const totals = userDeposits.reduce(
+            (acc, deposit) => ({
+                pending: acc.pending + deposit.pending,
+                claimable: acc.claimable + deposit.claimable,
+                claimed: acc.claimed + deposit.claimed
+            }),
+            { pending: 0, claimable: 0, claimed: 0 }
+        );
 
         // Return user's deposit activity
         return res.status(200).json({
@@ -721,12 +691,11 @@ depositsRouter.get("/user/:userAddress", async (req: Request, res: Response) => 
                 lastUpdated: new Date().toISOString()
             }
         });
-
     } catch (error: any) {
-        console.error("User deposits polling error:", error);
+        console.error('User deposits polling error:', error);
         return res.status(500).json({
             success: false,
-            error: "Failed to retrieve user deposits"
+            error: 'Failed to retrieve user deposits'
         });
     }
 });
@@ -736,7 +705,7 @@ depositsRouter.get("/user/:userAddress", async (req: Request, res: Response) => 
  * Get deposit statistics for a specific pool
  * No authentication required (public blockchain data)
  */
-depositsRouter.get("/pool/:poolId", async (req: Request, res: Response) => {
+depositsRouter.get('/pool/:poolId', async (req: Request, res: Response) => {
     try {
         const { poolId } = req.params;
 
@@ -745,7 +714,7 @@ depositsRouter.get("/pool/:poolId", async (req: Request, res: Response) => {
         if (isNaN(poolIdNum) || poolIdNum < 0) {
             return res.status(400).json({
                 success: false,
-                error: "Invalid pool ID format"
+                error: 'Invalid pool ID format'
             });
         }
 
@@ -763,7 +732,7 @@ depositsRouter.get("/pool/:poolId", async (req: Request, res: Response) => {
         if (!pool) {
             return res.status(404).json({
                 success: false,
-                error: "Pool not found"
+                error: 'Pool not found'
             });
         }
 
@@ -777,7 +746,7 @@ depositsRouter.get("/pool/:poolId", async (req: Request, res: Response) => {
 
         // Generate ETag for caching
         const etag = `"pool-${poolIdNum}-${poolDeposits.length}-${poolDeposits[0]?.timestamp?.getTime() || 0}"`;
-        
+
         // Check if client has cached version
         if (req.headers['if-none-match'] === etag) {
             return res.status(304).end();
@@ -786,7 +755,7 @@ depositsRouter.get("/pool/:poolId", async (req: Request, res: Response) => {
         // Set cache headers for polling optimization
         res.set({
             'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
-            'ETag': etag,
+            ETag: etag,
             'Last-Modified': new Date().toUTCString()
         });
 
@@ -803,14 +772,13 @@ depositsRouter.get("/pool/:poolId", async (req: Request, res: Response) => {
                 lastUpdated: new Date().toISOString()
             }
         });
-
     } catch (error: any) {
-        console.error("Pool deposits polling error:", error);
+        console.error('Pool deposits polling error:', error);
         return res.status(500).json({
             success: false,
-            error: "Failed to retrieve pool deposit statistics"
+            error: 'Failed to retrieve pool deposit statistics'
         });
     }
 });
 
-export default depositsRouter; 
+export default depositsRouter;

@@ -1,9 +1,9 @@
-export type AuthOptionType = "email";
+export type AuthOptionType = 'email';
 
 export interface EmailAuthOptionProps {
     avatar: string;
     name: string;
-    type: "email";
+    type: 'email';
     next: () => void;
 }
 

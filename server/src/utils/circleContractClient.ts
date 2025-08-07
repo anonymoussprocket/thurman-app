@@ -1,9 +1,9 @@
-import { initiateSmartContractPlatformClient } from "@circle-fin/smart-contract-platform";
-import { config } from "../config";
+import { initiateSmartContractPlatformClient } from '@circle-fin/smart-contract-platform';
+import { config } from '../config';
 
 const circleContractClient = initiateSmartContractPlatformClient({
     apiKey: config.circleApiKey,
-    entitySecret: config.circleEntitySecret,
+    entitySecret: config.circleEntitySecret
 });
 
 export class CircleContractClient {
@@ -16,20 +16,12 @@ export class CircleContractClient {
      * @param functionArgs - Function arguments
      * @returns Function result
      */
-    async queryContract({
-        contractAddress,
-        functionName,
-        functionArgs = []
-    }: {
-        contractAddress: string;
-        functionName: string;
-        functionArgs?: any[];
-    }): Promise<string> {
+    async queryContract({ contractAddress, functionName, functionArgs = [] }: { contractAddress: string; functionName: string; functionArgs?: any[] }): Promise<string> {
         try {
             // For now, return a mock value since we need to implement the actual Circle SDK query
             // This will be replaced with actual implementation once we confirm the correct API
             console.log(`Mock query: ${functionName} on ${contractAddress} with args:`, functionArgs);
-            
+
             // Mock responses for testing
             if (functionName === 'balanceOf') {
                 return '1000000000000000000'; // 1 share in wei
@@ -40,7 +32,7 @@ export class CircleContractClient {
             } else if (functionName === 'totalSupply') {
                 return '1000000000000000000000'; // 1000 shares
             }
-            
+
             return '0';
         } catch (error) {
             console.error(`Error querying contract ${contractAddress} function ${functionName}:`, error);
@@ -103,4 +95,4 @@ export class CircleContractClient {
     }
 }
 
-export default circleContractClient; 
+export default circleContractClient;

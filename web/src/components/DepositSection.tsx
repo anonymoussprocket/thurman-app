@@ -1,17 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  TextField,
-  Typography,
-  Alert,
-  CircularProgress,
-  InputAdornment,
-  FormHelperText,
-  Divider
-} from '@mui/material';
+import { Box, Button, Card, CardContent, TextField, Typography, Alert, CircularProgress, InputAdornment, FormHelperText, Divider } from '@mui/material';
 import { AccountBalance as AccountBalanceIcon } from '@mui/icons-material';
 import axios from 'axios';
 import { styles } from '../styles/styles';
@@ -32,15 +20,7 @@ interface ValidationState {
   warning?: string;
 }
 
-export default function DepositSection({
-  poolId,
-  poolName,
-  minDeposit = 0.01,
-  maxDeposit = 1000000,
-  userBalance = 0,
-  onDepositSuccess,
-  onDepositError
-}: DepositSectionProps) {
+export default function DepositSection({ poolId, poolName, minDeposit = 0.01, maxDeposit = 1000000, userBalance = 0, onDepositSuccess, onDepositError }: DepositSectionProps) {
   const [amount, setAmount] = useState('');
   const [validation, setValidation] = useState<ValidationState>({ isValid: false });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,48 +37,48 @@ export default function DepositSection({
     }
 
     const numAmount = parseFloat(amount);
-    
+
     // Check if it's a valid number
     if (isNaN(numAmount) || numAmount <= 0) {
-      setValidation({ 
-        isValid: false, 
-        error: 'Please enter a valid amount greater than 0' 
+      setValidation({
+        isValid: false,
+        error: 'Please enter a valid amount greater than 0'
       });
       return;
     }
 
     // Check minimum deposit
     if (numAmount < minDeposit) {
-      setValidation({ 
-        isValid: false, 
-        error: `Minimum deposit amount is $${minDeposit.toLocaleString()}` 
+      setValidation({
+        isValid: false,
+        error: `Minimum deposit amount is $${minDeposit.toLocaleString()}`
       });
       return;
     }
 
     // Check maximum deposit
     if (numAmount > maxDeposit) {
-      setValidation({ 
-        isValid: false, 
-        error: `Maximum deposit amount is $${maxDeposit.toLocaleString()}` 
+      setValidation({
+        isValid: false,
+        error: `Maximum deposit amount is $${maxDeposit.toLocaleString()}`
       });
       return;
     }
 
     // Check user balance
     if (numAmount > userBalance) {
-      setValidation({ 
-        isValid: false, 
-        error: `Insufficient balance. You have $${userBalance.toLocaleString()} USDC available` 
+      setValidation({
+        isValid: false,
+        error: `Insufficient balance. You have $${userBalance.toLocaleString()} USDC available`
       });
       return;
     }
 
     // Check for warnings (high percentage of balance)
-    if (userBalance > 0 && (numAmount / userBalance) > 0.9) {
-      setValidation({ 
-        isValid: true, 
-        warning: 'This deposit uses over 90% of your available balance' 
+    if (userBalance > 0 && numAmount / userBalance > 0.9) {
+      setValidation({
+        isValid: true,
+        warning: 'This deposit uses over 90% of your available balance'
       });
     } else {
       setValidation({ isValid: true });
@@ -108,7 +88,7 @@ export default function DepositSection({
   // Format amount input
   const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    
+
     // Only allow numbers and decimal points
     if (/^\d*\.?\d{0,2}$/.test(value) || value === '') {
       setAmount(value);
@@ -130,7 +110,7 @@ export default function DepositSection({
 
       if (response.data.success) {
         const { approvalTransactionId, depositTransactionId } = response.data.data;
-        
+
         setNotification({
           type: 'success',
           message: `Deposit request submitted successfully! Transaction IDs: ${approvalTransactionId}, ${depositTransactionId}`
@@ -138,7 +118,7 @@ export default function DepositSection({
 
         // Clear form
         setAmount('');
-        
+
         // Call success callback
         if (onDepositSuccess) {
           onDepositSuccess(depositTransactionId);
@@ -148,7 +128,7 @@ export default function DepositSection({
       }
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || error.message || 'Failed to submit deposit request';
-      
+
       setNotification({
         type: 'error',
         message: errorMessage
@@ -168,27 +148,25 @@ export default function DepositSection({
   };
 
   return (
-    <Card sx={{ 
-      borderRadius: '1.25em',
-      backgroundColor: '#FFFFFE',
-      boxShadow: '0 0.125em 0.25em rgba(0, 0, 0, 0.08)'
-    }}>
+    <Card
+      sx={{
+        borderRadius: '1.25em',
+        backgroundColor: '#FFFFFE',
+        boxShadow: '0 0.125em 0.25em rgba(0, 0, 0, 0.08)'
+      }}
+    >
       <CardContent>
-        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: '#29262a' }}>
+        <Typography variant='h6' gutterBottom sx={{ fontWeight: 600, color: '#29262a' }}>
           Make a Deposit
         </Typography>
-        
-        <Typography variant="body2" sx={{ mb: 3, color: '#666' }}>
+
+        <Typography variant='body2' sx={{ mb: 3, color: '#666' }}>
           Deposit USDC into {poolName} to earn interest on your investment.
         </Typography>
 
         {/* Notification Alert */}
         {notification && (
-          <Alert 
-            severity={notification.type} 
-            onClose={clearNotification}
-            sx={{ mb: 3 }}
-          >
+          <Alert severity={notification.type} onClose={clearNotification} sx={{ mb: 3 }}>
             {notification.message}
           </Alert>
         )}
@@ -197,17 +175,17 @@ export default function DepositSection({
         <Box sx={{ mb: 3 }}>
           <TextField
             fullWidth
-            label="Deposit Amount (USDC)"
+            label='Deposit Amount (USDC)'
             value={amount}
             onChange={handleAmountChange}
-            placeholder="0.00"
-            variant="outlined"
-            size="small"
+            placeholder='0.00'
+            variant='outlined'
+            size='small'
             error={!!validation.error}
             disabled={isSubmitting}
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start">
+                <InputAdornment position='start'>
                   <AccountBalanceIcon sx={{ color: '#725aa2' }} />
                 </InputAdornment>
               ),
@@ -222,34 +200,30 @@ export default function DepositSection({
               sx: { color: '#666' }
             }}
           />
-          
+
           {/* Validation Messages */}
           {validation.error && (
             <FormHelperText error sx={{ mt: 1, ml: 1 }}>
               {validation.error}
             </FormHelperText>
           )}
-          
-          {validation.warning && (
-            <FormHelperText sx={{ mt: 1, ml: 1, color: '#ed6c02' }}>
-              {validation.warning}
-            </FormHelperText>
-          )}
+
+          {validation.warning && <FormHelperText sx={{ mt: 1, ml: 1, color: '#ed6c02' }}>{validation.warning}</FormHelperText>}
         </Box>
 
         {/* Deposit Limits Info */}
         <Box sx={{ mb: 3, p: 2, backgroundColor: '#f8f9fa', borderRadius: '0.75em' }}>
-          <Typography variant="body2" sx={{ color: '#666', mb: 1 }}>
+          <Typography variant='body2' sx={{ color: '#666', mb: 1 }}>
             Deposit Limits:
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
-            <Typography variant="body2" sx={{ color: '#666' }}>
+            <Typography variant='body2' sx={{ color: '#666' }}>
               Min: ${minDeposit.toLocaleString()}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#666' }}>
+            <Typography variant='body2' sx={{ color: '#666' }}>
               Max: ${maxDeposit.toLocaleString()}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#666' }}>
+            <Typography variant='body2' sx={{ color: '#666' }}>
               Your Balance: ${userBalance.toLocaleString()}
             </Typography>
           </Box>
@@ -260,7 +234,7 @@ export default function DepositSection({
         {/* Submit Button */}
         <Button
           fullWidth
-          variant="contained"
+          variant='contained'
           onClick={handleDepositRequest}
           disabled={!validation.isValid || isSubmitting}
           sx={{
@@ -282,11 +256,11 @@ export default function DepositSection({
 
         {/* Processing Info */}
         {isSubmitting && (
-          <Typography variant="body2" sx={{ mt: 2, textAlign: 'center', color: '#666' }}>
+          <Typography variant='body2' sx={{ mt: 2, textAlign: 'center', color: '#666' }}>
             This may take 5-10 minutes to process. You'll receive a notification when complete.
           </Typography>
         )}
       </CardContent>
     </Card>
   );
-} 
+}

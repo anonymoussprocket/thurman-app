@@ -20,7 +20,7 @@ export function LendingPoolsSection({ pools, loading, error }: LendingPoolsSecti
   if (error) {
     return (
       <Box sx={styles.pools.section}>
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity='error' sx={{ mb: 2 }}>
           Error loading pools: {error.message}
         </Alert>
       </Box>
@@ -29,33 +29,17 @@ export function LendingPoolsSection({ pools, loading, error }: LendingPoolsSecti
 
   return (
     <Box sx={styles.pools.section}>
-      <Typography variant="h6" sx={{ mb: 1, color: styles.metrics.label.color }}>
+      <Typography variant='h6' sx={{ mb: 1, color: styles.metrics.label.color }}>
         Available Lending Pools
       </Typography>
-      
-      {loading ? (
-        [...Array(2)].map((_, i) => (
-          <Skeleton 
-            key={i}
-            variant="rectangular" 
-            sx={{ ...styles.pools.card, height: '200px' }}
-          />
-        ))
-      ) : (
-        pools.map(pool => (
-          <PoolCard
-            key={pool.id}
-            pool={pool}
-            onBrowse={handleBrowsePool}
-          />
-        ))
-      )}
-      
+
+      {loading ? [...Array(2)].map((_, i) => <Skeleton key={i} variant='rectangular' sx={{ ...styles.pools.card, height: '200px' }} />) : pools.map(pool => <PoolCard key={pool.id} pool={pool} onBrowse={handleBrowsePool} />)}
+
       {!loading && pools.length === 0 && (
-        <Typography variant="body1" sx={{ textAlign: 'center', mt: 4 }}>
+        <Typography variant='body1' sx={{ textAlign: 'center', mt: 4 }}>
           No lending pools available at this time.
         </Typography>
       )}
     </Box>
   );
-} 
+}

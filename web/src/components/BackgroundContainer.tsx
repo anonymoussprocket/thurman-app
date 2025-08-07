@@ -1,6 +1,6 @@
-import React, { ReactNode } from "react";
-import { Container } from "@mui/material";
-import { styles } from "../styles/styles";
+import React, { ReactNode } from 'react';
+import { Container } from '@mui/material';
+import { styles } from '../styles/styles';
 
 interface BackgroundContainerProps {
   children: ReactNode;
@@ -8,11 +8,7 @@ interface BackgroundContainerProps {
 
 export default function BackgroundContainer({ children }: BackgroundContainerProps) {
   return (
-    <Container
-      maxWidth={false}
-      disableGutters
-      sx={styles.containers.backgroundContainer}
-    >
+    <Container maxWidth={false} disableGutters sx={styles.containers.backgroundContainer}>
       {children}
     </Container>
   );

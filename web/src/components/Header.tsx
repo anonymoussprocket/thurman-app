@@ -1,53 +1,32 @@
-import React from "react";
-import { 
-  AppBar, 
-  Avatar, 
-  Toolbar, 
-  Box
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import useAccount from "../hooks/useAccount";
-import { styles } from "../styles/styles";
-import AccountDropdown from "./AccountDropdown";
-import ContentContainer from "./ContentContainer";
-import NavigateButton from "./NavigateButton";
-import thurman from "../assets/images/thurman.png";
+import React from 'react';
+import { AppBar, Avatar, Toolbar, Box } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import useAccount from '../hooks/useAccount';
+import { styles } from '../styles/styles';
+import AccountDropdown from './AccountDropdown';
+import ContentContainer from './ContentContainer';
+import NavigateButton from './NavigateButton';
+import thurman from '../assets/images/thurman.png';
 
 export default function Header() {
   const navigate = useNavigate();
   const { user } = useAccount();
 
   return (
-    <AppBar position="sticky" sx={styles.header.appBar}>
+    <AppBar position='sticky' sx={styles.header.appBar}>
       <ContentContainer>
         <Toolbar sx={styles.header.toolbar}>
           <Box sx={styles.header.navLinksContainer}>
-            <Avatar
-              src={thurman}
-              onClick={() => navigate("/")}
-              sx={styles.avatar.header}
-            />
-            <NavigateButton
-              variant="text"
-              to="/pools"
-              sx={styles.button.text}
-            >
+            <Avatar src={thurman} onClick={() => navigate('/')} sx={styles.avatar.header} />
+            <NavigateButton variant='text' to='/pools' sx={styles.button.text}>
               Pools
             </NavigateButton>
-            {user?.role === "ADMIN" && (
+            {user?.role === 'ADMIN' && (
               <>
-                <NavigateButton
-                  variant="text"
-                  to="/admin"
-                  sx={styles.button.text}
-                >
+                <NavigateButton variant='text' to='/admin' sx={styles.button.text}>
                   Admin Dashboard
                 </NavigateButton>
-                <NavigateButton
-                  variant="text"
-                  to="/admin/create-pool"
-                  sx={styles.button.text}
-                >
+                <NavigateButton variant='text' to='/admin/create-pool' sx={styles.button.text}>
                   Create Pool
                 </NavigateButton>
               </>
@@ -59,18 +38,10 @@ export default function Header() {
               <AccountDropdown />
             ) : (
               <>
-                <NavigateButton 
-                  variant="text" 
-                  to="/login"
-                  sx={styles.button.text}
-                >
+                <NavigateButton variant='text' to='/login' sx={styles.button.text}>
                   Log in
                 </NavigateButton>
-                <NavigateButton 
-                  variant="contained"
-                  to="/signup"
-                  sx={styles.button.primary}
-                >
+                <NavigateButton variant='contained' to='/signup' sx={styles.button.primary}>
                   Sign up
                 </NavigateButton>
               </>
