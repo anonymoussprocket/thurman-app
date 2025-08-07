@@ -10,6 +10,7 @@ import {
   DepositEvent,
   validateDepositEvent
 } from "../services/depositStateManager";
+import { logger } from "../config/logger";
 
 var contractEventsRouter: Router = express.Router();
 
@@ -117,15 +118,11 @@ function processContractEvent(notification: CircleEventNotification): ProcessedE
   const contractEvent = notification.contractEvent;
   
   if (!contractEvent) {
-    console.log("No contract event data in notification");
+    logger.error(`routes/contractEvents.processContractEvent(): no contract event data in notification for ${JSON.stringify(notification)}`);
     return null;
   }
   
-  console.log("Processing contract event:", {
-    eventName: contractEvent.eventName,
-    txHash: contractEvent.transactionHash,
-    blockNumber: contractEvent.blockNumber
-  });
+  logger.debug(`routes/contractEvents.processContractEvent(): Processing contract event: ${JSON.stringify(notification)}`);
   
   // Check if this is from our PoolManager contract
   if (POOL_MANAGER_CONTRACT_ADDRESS && 

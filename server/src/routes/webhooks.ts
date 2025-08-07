@@ -1,6 +1,7 @@
 import express, { Router, Request, Response, NextFunction } from "express";
 import { deployLoans, configurePoolSettings, getPoolIdFromTransaction, cleanupFailedPoolIds } from "../services/circle";
 import { findByTransactionId, updateDeploymentStatus } from "../prisma/models";
+import { logger } from "../config/logger";
 
 const webhooksRouter: Router = express.Router();
 
@@ -45,7 +46,7 @@ webhooksRouter.get("/circle", (req: Request, res: Response) => {
     
     // Add connection to map
     connectionMap.set(connectionId, res);
-    console.log(`New SSE connection established: ${connectionId}`);
+    logger.info(`routes/webhooks /circle: established SSE connection ${connectionId}`);
 
     // Send initial connection message
     res.write(`data: ${JSON.stringify({ type: 'connected', connectionId })}\n\n`);
@@ -55,7 +56,7 @@ webhooksRouter.get("/circle", (req: Request, res: Response) => {
         try {
             res.write(`data: ${JSON.stringify({ type: 'heartbeat', timestamp: Date.now() })}\n\n`);
         } catch (error) {
-            console.error(`Error sending heartbeat to ${connectionId}:`, error);
+            logger.error(`routes/webhooks /circle: failed to send heartbeat to ${connectionId} with ${error}`);
             clearInterval(heartbeatInterval);
             cleanupConnection(connectionId);
         }
@@ -70,7 +71,7 @@ webhooksRouter.get("/circle", (req: Request, res: Response) => {
 
     // Handle connection error
     req.on('error', (error) => {
-        console.error(`SSE connection error for ${connectionId}:`, error);
+        logger.error(`routes/webhooks /circle: connection error on ${connectionId}: ${error}`);
         clearInterval(heartbeatInterval);
         cleanupConnection(connectionId);
     });
@@ -83,7 +84,7 @@ webhooksRouter.post("/circle", async (req: Request, res: Response, next: NextFun
         
         // Handle Circle test webhooks
         if (notification.notificationType === 'webhooks.test') {
-            console.log("Processing Circle test webhook");
+            logger.debug(`routes/webhooks /circle: processing notification ${notification}`);
             return res.status(200).json({
                 success: true,
                 message: "Test webhook received successfully",
